@@ -1,0 +1,20 @@
+{
+    "manifest_version": 2,
+
+    "name": "GitHub Fast-Forward Only",
+    "description": "Make an awesome Git history",
+    "version": "0.1",
+
+    "permissions": [
+        "https://github.com/*",
+        "http://github.com/*"
+    ],
+
+    "content_scripts": [
+        {
+            "js": ["jquery.min.js", "main.js"],
+            "matches": ["*://github.com/*/pull/*"],
+            "run_at": "document_end"
+        }
+    ]
+}
