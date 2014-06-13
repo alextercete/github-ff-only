@@ -14,13 +14,16 @@ $(function () {
         github = new GitHub(accessToken);
 
     github.getPullRequestState(repo, pullRequest, function (state) {
+        var $container = $("#js-discussion-header"),
+            $target = $container.find(".flex-table-item").filter(":last");
+
         switch (state) {
             case states.FAST_FORWARD:
-                alert("It's Fast-Forward!");
+                $target.append("fast-forwardly");
                 break;
 
             case states.NON_FAST_FORWARD:
-                alert("It's NOT Fast-Forward!");
+                $target.append("non fast-forwardly");
                 break;
 
             default:
