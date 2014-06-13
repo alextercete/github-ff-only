@@ -68,7 +68,14 @@ var GitHub = function (accessToken) {
             };
         }
 
-        return $.ajax(settings);
+        return $.ajax(settings).fail(function (jqXHR) {
+            if (jqXHR.status == 401 || jqXHR.status == 404) {
+                var setCredentialsCommand = "localStorage.setItem('ff_only.github_access_token', 'YOUR_TOKEN_HERE')'";
+
+                console.warn("You don't have permission to read the repository");
+                console.info("Configure your access token running \"" + setCredentialsCommand + "\" from the console");
+            }
+        });
     }
 
     return {
