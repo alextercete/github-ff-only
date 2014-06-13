@@ -1,3 +1,9 @@
+var states = {
+    MERGED: 0,
+    FAST_FORWARD: 1,
+    NON_FAST_FORWARD: 2
+};
+
 $(function () {
     var pathName = window.location.pathname,
         matches = pathName.match(/^\/(.+?)\/pull\/(\d+)$/),
@@ -7,13 +13,18 @@ $(function () {
     var accessToken = localStorage.getItem("ff_only.github_access_token"),
         github = new GitHub(accessToken);
 
-    // TODO: Allow to filter which repo's will be analyzed
+    github.getPullRequestState(repo, pullRequest, function (state) {
+        switch (state) {
+            case states.FAST_FORWARD:
+                alert("It's Fast-Forward!");
+                break;
 
-    github.isFastForwardPullRequest(repo, pullRequest, function (result) {
-        if (result) {
-            alert("It's Fast-Forward!");
-        } else {
-            alert("It's NOT Fast-Forward!");
+            case states.NON_FAST_FORWARD:
+                alert("It's NOT Fast-Forward!");
+                break;
+
+            default:
+                break;
         }
     });
 });
@@ -21,17 +32,16 @@ $(function () {
 var GitHub = function (accessToken) {
     var apiBaseUrl = "https://api.github.com/";
 
-    var isFastForwardPullRequest = function (repo, pullRequest, callback) {
-        return getPullRequest(repo, pullRequest)
-            .then(function (json) {
-                return compareCommits(repo, json.base.label, json.head.label);
-            })
-            .then(function (json) {
-                return json["behind_by"] === 0;
-            })
-            .done(function (result) {
-                callback(result);
-            });
+    var getPullRequestState = function (repo, pullRequest, callback) {
+        getPullRequest(repo, pullRequest).done(function (json) {
+            if (json.merged === true) {
+                callback(states.MERGED);
+            } else {
+                compareCommits(repo, json.base.label, json.head.label).done(function (json) {
+                    callback(json["behind_by"] === 0 ? states.FAST_FORWARD : states.NON_FAST_FORWARD);
+                });
+            }
+        });
     };
 
     var getPullRequest = function (repo, pullRequest) {
@@ -59,6 +69,6 @@ var GitHub = function (accessToken) {
     }
 
     return {
-        isFastForwardPullRequest: isFastForwardPullRequest
+        getPullRequestState: getPullRequestState
     };
 };
